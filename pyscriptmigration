@@ -1,0 +1,38 @@
+import json
+import os
+from markdownify import markdownify as md
+
+def sanitize_filename(filename):
+    """Sanitize the filename to remove characters that might be invalid for file paths."""
+    return "".join([c for c in filename if c.isalpha() or c.isdigit() or c in [' ', '_', '-']]).rstrip()
+
+def convert_html_to_markdown(html_content):
+    """Convert HTML content to Markdown format."""
+    return md(html_content)
+
+def save_article_as_markdown(title, markdown_content, output_dir='markdown_articles'):
+    """Save the article as a Markdown file."""
+    filename = sanitize_filename(title) + '.md'
+    filepath = os.path.join(output_dir, filename)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    with open(filepath, 'w', encoding='utf-8') as file:
+        file.write(markdown_content)
+    print(f"Article '{title}' saved to {filepath}")
+
+def process_json_and_convert(json_file, output_dir='markdown_articles'):
+    """Process the JSON file and convert each article to a Markdown file."""
+    with open(json_file, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    for category in data:
+        for folder in category['category']['folders']:
+            for article in folder['articles']:
+                title = article['title']
+                html_content = article['description']
+                markdown_content = convert_html_to_markdown(html_content)
+                save_article_as_markdown(title, markdown_content, output_dir)
+
+# Full path to the 'Solutions.json' file on your Windows system
+json_file_path = r"C:\Users\PC\Desktop\Notion\Solutions.json"
+process_json_and_convert(json_file_path)
